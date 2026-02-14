@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valentine's Invitation</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Press Start 2P', cursive;
+            background: #FFCFD8;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        #app {
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        /* Background Pixel Hearts */
+        .pixel-hearts-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+        
+        .pixel-heart {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: transparent;
+            animation: float 8s infinite ease-in-out;
+            opacity: 0.6;
+        }
+        
+        .pixel-heart::before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #ff006e;
+            box-shadow: 
+                -20px -20px 0 #ff006e,
+                20px -20px 0 #ff006e,
+                -20px 0 0 #ff006e,
+                20px 0 0 #ff006e,
+                -40px 0 0 #ff006e,
+                40px 0 0 #ff006e,
+                -20px 20px 0 #ff006e,
+                20px 20px 0 #ff006e,
+                0 20px 0 #ff006e,
+                -20px 40px 0 #ff006e,
+                20px 40px 0 #ff006e,
+                0 40px 0 #ff006e,
+                0 60px 0 #ff006e;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.6; }
+            90% { opacity: 0.6; }
+            100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+        }
+        
+        /* Page Transitions */
+        .page {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            transition: opacity 0.5s, transform 0.5s;
+        }
+        
+        .page-enter-active, .page-leave-active {
+            transition: all 0.5s ease;
+        }
+        
+        .page-enter-from {
+            opacity: 0;
+            transform: translateX(50px);
+        }
+        
+        .page-leave-to {
+            opacity: 0;
+            transform: translateX(-50px);
+        }
+        
+        /* Page 1: Password Keypad */
+        .keypad-page {
+            background: #FFCFD8;
+        }
+        
+        .keypad-container {
+            background: #e94560;
+            padding: 40px;
+            border: 4px solid #fff;
+            box-shadow: 
+                0 0 0 4px #000,
+                8px 8px 0 0 #000;
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+        
+        .keypad-title {
+            color: #fff;
+            font-size: 12px;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 0 #000;
+            line-height: 1.5;
+        }
+        
+        .password-display {
+            background: #000;
+            color: #0f0;
+            font-size: 24px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 4px solid #fff;
+            box-shadow: inset 0 0 10px rgba(0,255,0,0.5);
+            letter-spacing: 10px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .keypad-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .key-btn {
+            background: #533483;
+            color: #fff;
+            border: none;
+            padding: 20px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 
+                0 4px 0 #341f5e,
+                0 6px 0 #000;
+            transition: all 0.1s;
+            position: relative;
+        }
+        
+        .key-btn:hover {
+            background: #6b4aa6;
+            transform: translateY(2px);
+            box-shadow: 
+                0 2px 0 #341f5e,
+                0 4px 0 #000;
+        }
+        
+        .key-btn:active {
+            transform: translateY(4px);
+            box-shadow: 
+                0 0 0 #341f5e,
+                0 2px 0 #000;
+        }
+        
+        .key-btn.clear {
+            background: #ff006e;
+            box-shadow: 
+                0 4px 0 #b3004d,
+                0 6px 0 #000;
+        }
+        
+        .key-btn.clear:hover {
+            background: #ff3385;
+        }
+        
+        .key-btn.enter {
+            background: #00d9ff;
+            color: #000;
+            box-shadow: 
+                0 4px 0 #0099b3,
+                0 6px 0 #000;
+        }
+        
+        .key-btn.enter:hover {
+            background: #33e0ff;
+        }
+        
+        .error-msg {
+            color: #ff006e;
+            font-size: 10px;
+            margin-top: 10px;
+            text-shadow: 1px 1px 0 #000;
+            animation: blink 0.5s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        
+        .hint {
+            color: #fff;
+            font-size: 8px;
+            margin-top: 20px;
+            opacity: 0.7;
+        }
+        
+        /* Page 2: Invitation */
+        .invitation-page {
+            background: #FFCFD8;
+        }
+        
+        .invitation-card {
+            background: #fff;
+            padding: 60px 40px 40px;
+            border: 4px solid #000;
+            box-shadow: 
+                8px 8px 0 0 #000,
+                0 0 0 4px #ff006e;
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            position: relative;
+            overflow: visible;
+        }
+        
+        /* FIXED PIXEL HEART - Using a grid of actual pixel divs */
+        .pixel-heart-container {
+            display: inline-grid;
+            grid-template-columns: repeat(9, 10px);
+            grid-template-rows: repeat(9, 10px);
+            gap: 0;
+            margin-bottom: 30px;
+            animation: heartbeat 1.5s infinite;
+        }
+        
+        .heart-pixel {
+            width: 10px;
+            height: 10px;
+            background: transparent;
+        }
+        
+        .heart-pixel.filled {
+            background: #ff006e;
+            box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
+        }
+        
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .invitation-title {
+            font-size: 24px;
+            color: #ff006e;
+            margin-bottom: 30px;
+            line-height: 1.5;
+            text-shadow: 2px 2px 0 #000;
+        }
+        
+        .invitation-text {
+            font-size: 12px;
+            color: #333;
+            line-height: 2;
+            margin-bottom: 30px;
+        }
+        
+        .response-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .pixel-btn {
+            padding: 15px 30px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 12px;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            box-shadow: 
+                0 6px 0 #000,
+                0 8px 0 rgba(0,0,0,0.3);
+            transition: all 0.1s;
+        }
+        
+        .pixel-btn:hover {
+            transform: translateY(2px);
+            box-shadow: 
+                0 4px 0 #000,
+                0 6px 0 rgba(0,0,0,0.3);
+        }
+        
+        .pixel-btn:active {
+            transform: translateY(6px);
+            box-shadow: 
+                0 0 0 #000,
+                0 2px 0 rgba(0,0,0,0.3);
+        }
+        
+        .btn-yes {
+            background: #00d9ff;
+            color: #000;
+        }
+        
+        .btn-no {
+            background: #ff006e;
+            color: #fff;
+        }
+        
+        .celebration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #ffd700;
+            animation: confetti-fall 3s linear forwards;
+        }
+        
+        @keyframes confetti-fall {
+            0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+        
+        /* Page 3: Message Card */
+        .message-page {
+            background: #FFCFD8;
+            padding: 40px 20px;
+        }
+        
+        .message-card {
+            background: #fff5f5;
+            max-width: 800px;
+            width: 100%;
+            border: 4px solid #000;
+            box-shadow: 
+                12px 12px 0 0 #000,
+                0 0 0 4px #ff006e;
+            padding: 40px;
+            position: relative;
+        }
+        
+        .message-header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 4px dashed #ff006e;
+            padding-bottom: 20px;
+        }
+        
+        .message-title {
+            font-size: 20px;
+            color: #ff006e;
+            text-shadow: 2px 2px 0 #000;
+            margin-bottom: 10px;
+        }
+        
+        .message-date {
+            font-size: 10px;
+            color: #666;
+        }
+        
+        .message-content {
+            font-size: 11px;
+            line-height: 2.5;
+            color: #333;
+            margin-bottom: 30px;
+            text-align: justify;
+        }
+        
+        /* PHOTO GALLERY STYLES - UPDATED FOR REAL IMAGES */
+        .photo-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .photo-frame {
+            background: #fff;
+            padding: 10px;
+            border: 4px solid #000;
+            box-shadow: 4px 4px 0 0 #000;
+            transform: rotate(-2deg);
+            transition: transform 0.3s;
+            overflow: hidden;
+        }
+        
+        .photo-frame:nth-child(even) {
+            transform: rotate(2deg);
+        }
+        
+        .photo-frame:hover {
+            transform: rotate(0deg) scale(1.05);
+            z-index: 10;
+        }
+        
+        /* STYLE FOR ACTUAL IMAGES */
+        .photo-frame img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            display: block;
+            border: 2px solid #000;
+            image-rendering: pixelated;
+        }
+        
+        /* Fallback placeholder if image fails to load */
+        .photo-placeholder {
+            width: 100%;
+            height: 150px;
+            background: linear-gradient(45deg, #ff006e, #8338ec);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 10px;
+            text-align: center;
+            border: 2px solid #000;
+        }
+        
+        .photo-caption {
+            font-size: 8px;
+            color: #666;
+            text-align: center;
+            margin-top: 10px;
+        }
+        
+        .pixel-signature {
+            text-align: right;
+            font-size: 12px;
+            color: #ff006e;
+            margin-top: 20px;
+        }
+        
+        .back-btn {
+            margin-top: 30px;
+            background: #533483;
+            color: #fff;
+            padding: 15px 30px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 10px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 
+                0 4px 0 #341f5e,
+                0 6px 0 #000;
+        }
+        
+        .back-btn:hover {
+            background: #6b4aa6;
+            transform: translateY(2px);
+            box-shadow: 
+                0 2px 0 #341f5e,
+                0 4px 0 #000;
+        }
+        
+        /* Floating pixel hearts decoration */
+        .floating-hearts {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        
+        .mini-heart {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #ff006e;
+            animation: float-up 4s infinite ease-in-out;
+        }
+        
+        @keyframes float-up {
+            0%, 100% { transform: translateY(0) scale(0); opacity: 0; }
+            50% { transform: translateY(-100px) scale(1); opacity: 1; }
+        }
+        
+        @media (max-width: 600px) {
+            .keypad-container, .invitation-card, .message-card {
+                padding: 20px;
+            }
+            
+            .key-btn {
+                padding: 15px;
+                font-size: 14px;
+            }
+            
+            .invitation-title {
+                font-size: 18px;
+            }
+            
+            .message-content {
+                font-size: 10px;
+            }
+            
+            .pixel-heart-container {
+                transform: scale(0.8);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Background Pixel Hearts -->
+        <div class="pixel-hearts-container">
+            <div v-for="n in 10" :key="n" class="pixel-heart" :style="{ left: Math.random() * 100 + '%', animationDelay: Math.random() * 8 + 's', animationDuration: (Math.random() * 4 + 6) + 's' }"></div>
+        </div>
+        
+        <!-- Page 1: Password Keypad -->
+        <transition name="page">
+            <div v-if="currentPage === 1" class="page keypad-page" key="page1">
+                <div class="keypad-container">
+                    <h1 class="keypad-title">🔒 SECRET VALENTINE 🔒</h1>
+                    <div class="password-display">
+                        {{ maskedPassword || 'ENTER CODE' }}
+                    </div>
+                    <div class="keypad-grid">
+                        <button v-for="num in 9" :key="num" class="key-btn" @click="enterDigit(num)">
+                            {{ num }}
+                        </button>
+                        <button class="key-btn clear" @click="clearPassword">C</button>
+                        <button class="key-btn" @click="enterDigit(0)">0</button>
+                        <button class="key-btn enter" @click="checkPassword">⏎</button>
+                    </div>
+                    <p v-if="errorMessage" class="error-msg">{{ errorMessage }}</p>
+                    <p class="hint">Hint: Special date (MMDD)</p>
+                </div>
+            </div>
+        </transition>
+        
+        <!-- Page 2: Invitation -->
+        <transition name="page">
+            <div v-if="currentPage === 2" class="page invitation-page" key="page2">
+                <div class="floating-hearts">
+                    <div v-for="n in 5" :key="n" class="mini-heart" :style="{ left: (n * 20) + '%', animationDelay: (n * 0.5) + 's' }"></div>
+                </div>
+                <div class="invitation-card">
+                    <!-- Vue-generated pixel heart grid -->
+                    <div class="pixel-heart-container">
+                        <div 
+                            v-for="(pixel, index) in heartPixels" 
+                            :key="index"
+                            class="heart-pixel"
+                            :class="{ filled: pixel }"
+                        ></div>
+                    </div>
+                    <h1 class="invitation-title">Will You Be My Valentine?</h1>
+                    <p class="invitation-text">
+                        Hey beautiful,<br><br>
+                        I've been waiting for this moment to ask you something special. You make my world brighter every single day, and I can't imagine spending Valentine's Day with anyone else but you.
+                    </p>
+                    <div class="response-buttons">
+                        <button class="pixel-btn btn-yes" @click="acceptInvitation">YES! 💕</button>
+                        <button class="pixel-btn btn-no" @mouseenter="moveButton" :style="noButtonStyle">NO</button>
+                    </div>
+                </div>
+                <div v-if="showCelebration" class="celebration">
+                    <div v-for="n in 50" :key="n" class="confetti" :style="{ left: Math.random() * 100 + '%', backgroundColor: ['#ff006e', '#00d9ff', '#ffd700', '#8338ec'][Math.floor(Math.random() * 4)], animationDelay: Math.random() * 2 + 's' }"></div>
+                </div>
+            </div>
+        </transition>
+        
+        <!-- Page 3: Message Card -->
+        <transition name="page">
+            <div v-if="currentPage === 3" class="page message-page" key="page3">
+                <div class="message-card">
+                    <div class="message-header">
+                        <h2 class="message-title">💌 My Dearest Love 💌</h2>
+                        <p class="message-date">February 14, 2026</p>
+                    </div>
+                    
+                    <div class="message-content">
+                        <p>Happy Valentine's, mahal ko.</p>
+                        <br>
+                        <p>Honestly kinda shy for this webpage, thank you po for being so with me. Ever since I met you, my life changed in the most beautiful way possible. Every day with you feels like a new adventure, filled with laughter, joy, and endless love.</p>
+                        <br>
+                        <p>You are my resting place, when the world feels too much. You became my supporter, when no one else believe that I can. You change the way how I perceive love. I didn't know, that love can be that warm and comforting. Your smile brightens my darkest days, and your laugh is my favorite melody.</p>
+                        <br>
+                        <p>On this Valentine's Day, I want you to know how incredibly special you are to me. I promise to always cherish you, support you, and love you with all my heart.</p>
+                        <br>
+                        <p>Here are some of my favorite moments with you:</p>
+                    </div>
+                    
+                    <!-- PHOTO GALLERY WITH REAL IMAGES -->
+                    <div class="photo-gallery">
+                        <!-- Photo 1 -->
+                        <div class="photo-frame">
+                            <img src="https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=400&h=300&fit=crop" 
+                                 alt="Our First Date" 
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            <div class="photo-placeholder" style="display: none;">📸<br>Photo 1</div>
+                            <p class="photo-caption">Our First Date 💕</p>
+                        </div>
+                        
+                        <!-- Photo 2 -->
+                        <div class="photo-frame">
+                            <img src="https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?w=400&h=300&fit=crop" 
+                                 alt="Adventure Time" 
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            <div class="photo-placeholder" style="display: none;">📸<br>Photo 2</div>
+                            <p class="photo-caption">Adventure Time 🌟</p>
+                        </div>
+                        
+                        <!-- Photo 3 -->
+                        <div class="photo-frame">
+                            <img src="https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=400&h=300&fit=crop" 
+                                 alt="Lazy Sundays" 
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            <div class="photo-placeholder" style="display: none;">📸<br>Photo 3</div>
+                            <p class="photo-caption">Lazy Sundays ☕</p>
+                        </div>
+                        
+                        <!-- Photo 4 -->
+                        <div class="photo-frame">
+                            <img src="https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=400&h=300&fit=crop" 
+                                 alt="Forever Us" 
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            <div class="photo-placeholder" style="display: none;">📸<br>Photo 4</div>
+                            <p class="photo-caption">Forever Us 💑</p>
+                        </div>
+                    </div>
+                    
+                    <div class="message-content">
+                        <p>I look forward to creating countless more memories with you. You are my forever Valentine.</p>
+                        <br>
+                        <p>With all my love,</p>
+                    </div>
+                    
+                    <p class="pixel-signature">Your Loving Partner ❤️</p>
+                    
+                    <button class="back-btn" @click="currentPage = 2">← Back to Invitation</button>
+                </div>
+            </div>
+        </transition>
+    </div>
+    
+    <script>
+        const { createApp } = Vue;
+        
+        createApp({
+            data() {
+                return {
+                    currentPage: 1,
+                    password: '',
+                    correctPassword: '1223',
+                    errorMessage: '',
+                    showCelebration: false,
+                    noButtonPosition: { x: 0, y: 0 },
+                    heartPixels: [
+                        0,0,1,1,0,1,1,0,0,
+                        0,1,1,1,1,1,1,1,0,
+                        1,1,1,1,1,1,1,1,1,
+                        1,1,1,1,1,1,1,1,1,
+                        0,1,1,1,1,1,1,1,0,
+                        0,0,1,1,1,1,1,0,0,
+                        0,0,0,1,1,1,0,0,0,
+                        0,0,0,0,1,0,0,0,0,
+                        0,0,0,0,0,0,0,0,0
+                    ]
+                }
+            },
+            computed: {
+                maskedPassword() {
+                    return this.password ? '•'.repeat(this.password.length) : '';
+                },
+                noButtonStyle() {
+                    return {
+                        transform: `translate(${this.noButtonPosition.x}px, ${this.noButtonPosition.y}px)`
+                    };
+                }
+            },
+            methods: {
+                enterDigit(digit) {
+                    if (this.password.length < 4) {
+                        this.password += digit;
+                        this.errorMessage = '';
+                    }
+                },
+                clearPassword() {
+                    this.password = '';
+                    this.errorMessage = '';
+                },
+                checkPassword() {
+                    if (this.password === this.correctPassword) {
+                        this.currentPage = 2;
+                        this.password = '';
+                    } else {
+                        this.errorMessage = '❌ WRONG CODE! TRY AGAIN';
+                        this.password = '';
+                    }
+                },
+                acceptInvitation() {
+                    this.showCelebration = true;
+                    setTimeout(() => {
+                        this.currentPage = 3;
+                        this.showCelebration = false;
+                    }, 2000);
+                },
+                moveButton(event) {
+                    const maxX = 100;
+                    const maxY = 50;
+                    this.noButtonPosition.x = (Math.random() - 0.5) * maxX * 2;
+                    this.noButtonPosition.y = (Math.random() - 0.5) * maxY * 2;
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
